@@ -12,55 +12,57 @@
 	<link rel="stylesheet" href="assets/css/leadmark.css">
     <!-- Check new post in the blog-->
     <title>Última entrada en mi blog de Substack</title>
-	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+	<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 	<script>
-		$(document).ready(function() {
-			// Obtener el feed RSS de Substack
-			var feed_url = "https://failingup.substack.com/rss";
+		// URL de la página de inicio de tu blog en Substack
+		var home_url = "https://failingup.substack.com/";
 
-			// Analizar el feed RSS para obtener la última entrada
-			$.get(feed_url, function(data) {
-				var $xml = $(data);
-				var $items = $xml.find("item");
-				var $last_item = $items.first();
+		// Función para cargar la lista de las últimas 5 entradas de tu blog
+		function loadLatestEntries() {
+			// Hacer una petición a la página de inicio de tu blog en Substack
+			axios.get(home_url)
+				.then(function(response) {
+					// Analizar la respuesta HTML para obtener la lista de las últimas 5 entradas
+					var parser = new DOMParser();
+					var htmlDoc = parser.parseFromString(response.data, "text/html");
 
-				// Obtener los datos de la última entrada
-				var title = $last_item.find("title").text();
-				var link = $last_item.find("link").text();
-				var description = $last_item.find("description").text();
-				var pubDate = $last_item.find("pubDate").text();
+					var entries = [];
+					var entryElements = htmlDoc.querySelectorAll(".post");
+					for (var i = 0; i < entryElements.length && i < 5; i++) {
+						var entryElement = entryElements[i];
+						var title = entryElement.querySelector("h2").innerText;
+						var url = entryElement.querySelector("a").getAttribute("href");
+						var pubDate = entryElement.querySelector(".post-meta time").getAttribute("datetime");
+						var content = entryElement.querySelector(".post-content").innerHTML;
 
-				// Mostrar los datos de la última entrada en la página
-				$("#title").text(title);
-				$("#link").attr("href", link);
-				$("#description").html(description);
-				$("#pubDate").text(pubDate);
-			});
-
-			// Hacer una petición periódica para comprobar si hay una nueva entrada
-			setInterval(function() {
-				$.get(feed_url, function(data) {
-					var $xml = $(data);
-					var $items = $xml.find("item");
-					var $last_item = $items.first();
-
-					// Comprobar si la última entrada ha cambiado
-					if ($("#link").attr("href") != $last_item.find("link").text()) {
-						// Actualizar la información de la última entrada
-						var title = $last_item.find("title").text();
-						var link = $last_item.find("link").text();
-						var description = $last_item.find("description").text();
-						var pubDate = $last_item.find("pubDate").text();
-
-						// Mostrar los datos actualizados en la página
-						$("#title").text(title);
-						$("#link").attr("href", link);
-						$("#description").html(description);
-						$("#pubDate").text(pubDate);
+						entries.push({
+							title: title,
+							url: url,
+							pubDate: pubDate,
+							content: content
+						});
 					}
+
+					// Mostrar la entrada más reciente en la página
+					var latestEntry = entries[0];
+					document.querySelector("#title").innerText = latestEntry.title;
+					document.querySelector("#pubDate").innerText = latestEntry.pubDate;
+					document.querySelector("#content").innerHTML = latestEntry.content;
+				})
+				.catch(function(error) {
+					console.error(error);
 				});
-			}, 43200000); // Comprobar cada 60 segundos (60000 milisegundos)
+		}
+
+		// Cargar la lista de las últimas 5 entradas al cargar la página
+		document.addEventListener("DOMContentLoaded", function(event) {
+			loadLatestEntries();
 		});
+
+		// Hacer una petición periódica para comprobar si hay una nueva entrada
+		setInterval(function() {
+			loadLatestEntries();
+		}, 86400000); // Comprobar cada 24 horas (86400000 milisegundos)
 	</script>
 </head>
 <body data-spy="scroll" data-target=".navbar" data-offset="40" id="home">
