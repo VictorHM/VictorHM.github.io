@@ -10,6 +10,58 @@
     <link rel="stylesheet" href="assets/vendors/themify-icons/css/themify-icons.css">
     <!-- Bootstrap + LeadMark main styles -->
 	<link rel="stylesheet" href="assets/css/leadmark.css">
+    <!-- Check new post in the blog-->
+    <title>Última entrada en mi blog de Substack</title>
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+	<script>
+		$(document).ready(function() {
+			// Obtener el feed RSS de Substack
+			var feed_url = "https://failingup.substack.com/rss";
+
+			// Analizar el feed RSS para obtener la última entrada
+			$.get(feed_url, function(data) {
+				var $xml = $(data);
+				var $items = $xml.find("item");
+				var $last_item = $items.first();
+
+				// Obtener los datos de la última entrada
+				var title = $last_item.find("title").text();
+				var link = $last_item.find("link").text();
+				var description = $last_item.find("description").text();
+				var pubDate = $last_item.find("pubDate").text();
+
+				// Mostrar los datos de la última entrada en la página
+				$("#title").text(title);
+				$("#link").attr("href", link);
+				$("#description").html(description);
+				$("#pubDate").text(pubDate);
+			});
+
+			// Hacer una petición periódica para comprobar si hay una nueva entrada
+			setInterval(function() {
+				$.get(feed_url, function(data) {
+					var $xml = $(data);
+					var $items = $xml.find("item");
+					var $last_item = $items.first();
+
+					// Comprobar si la última entrada ha cambiado
+					if ($("#link").attr("href") != $last_item.find("link").text()) {
+						// Actualizar la información de la última entrada
+						var title = $last_item.find("title").text();
+						var link = $last_item.find("link").text();
+						var description = $last_item.find("description").text();
+						var pubDate = $last_item.find("pubDate").text();
+
+						// Mostrar los datos actualizados en la página
+						$("#title").text(title);
+						$("#link").attr("href", link);
+						$("#description").html(description);
+						$("#pubDate").text(pubDate);
+					}
+				});
+			}, 43200000); // Comprobar cada 60 segundos (60000 milisegundos)
+		});
+	</script>
 </head>
 <body data-spy="scroll" data-target=".navbar" data-offset="40" id="home">
 
@@ -127,7 +179,18 @@
         </div>
     </section>
     <!-- End OF About Section -->
+    <section class="section" id="about">
+        <div class="container">
+            <h1>Última entrada en mi blog de Substack</h1>
+            <p><a id="link" href="#">Cargando...</a></p>
+            <h2 id="title"></h2>
+            <p id="description"></p>
+            <p>Publicado el <span id="pubDate"></span>.</p>
+        </div>
+    </section>
+    <!-- Blog post section-->
 
+    <!-- END of Blog post section-->
     <!-- Portfolio Section -->
     <section id="portfolio" class="section portfolio-section">
         <div class="container">
