@@ -12,58 +12,7 @@
 	<link rel="stylesheet" href="assets/css/leadmark.css">
     <!-- Check new post in the blog-->
     <title>Última entrada en mi blog de Substack</title>
-	<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-	<script>
-		// URL de la página de inicio de tu blog en Substack
-		var home_url = "https://failingup.substack.com/";
-
-		// Función para cargar la lista de las últimas 5 entradas de tu blog
-		function loadLatestEntries() {
-			// Hacer una petición a la página de inicio de tu blog en Substack
-			axios.get(home_url)
-				.then(function(response) {
-					// Analizar la respuesta HTML para obtener la lista de las últimas 5 entradas
-					var parser = new DOMParser();
-					var htmlDoc = parser.parseFromString(response.data, "text/html");
-
-					var entries = [];
-					var entryElements = htmlDoc.querySelectorAll(".post");
-					for (var i = 0; i < entryElements.length && i < 5; i++) {
-						var entryElement = entryElements[i];
-						var title = entryElement.querySelector("h2").innerText;
-						var url = entryElement.querySelector("a").getAttribute("href");
-						var pubDate = entryElement.querySelector(".post-meta time").getAttribute("datetime");
-						var content = entryElement.querySelector(".post-content").innerHTML;
-
-						entries.push({
-							title: title,
-							url: url,
-							pubDate: pubDate,
-							content: content
-						});
-					}
-
-					// Mostrar la entrada más reciente en la página
-					var latestEntry = entries[0];
-					document.querySelector("#title").innerText = latestEntry.title;
-					document.querySelector("#pubDate").innerText = latestEntry.pubDate;
-					document.querySelector("#content").innerHTML = latestEntry.content;
-				})
-				.catch(function(error) {
-					console.error(error);
-				});
-		}
-
-		// Cargar la lista de las últimas 5 entradas al cargar la página
-		document.addEventListener("DOMContentLoaded", function(event) {
-			loadLatestEntries();
-		});
-
-		// Hacer una petición periódica para comprobar si hay una nueva entrada
-		setInterval(function() {
-			loadLatestEntries();
-		}, 86400000); // Comprobar cada 24 horas (86400000 milisegundos)
-	</script>
+	<script src="assets/retrieve-post.js"></script>
 </head>
 <body data-spy="scroll" data-target=".navbar" data-offset="40" id="home">
 
@@ -184,11 +133,9 @@
     <!-- Blog post section-->
     <section class="section" id="blog">
         <div class="container">
-            <h1>Última entrada en mi blog de Substack</h1>
-            <p><a id="link" href="#">Cargando...</a></p>
-            <h2 id="title"></h2>
-            <p id="description"></p>
-            <p>Publicado el <span id="pubDate"></span>.</p>
+            <h1 id="titleblog">Cargando...</h1>
+            <p>Publicado el <span id="pubDateblog"></span>.</p>
+            <div id="contentblog"></div>
         </div>
     </section>
     <!-- END of Blog post section-->
